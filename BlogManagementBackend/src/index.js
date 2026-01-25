@@ -23,7 +23,10 @@ connectDB()
 // CORS
 
 app.use(cors({
-    origin: "https://bms-dekhoblog.onrender.com"
+    origin: "https://bms-dekhoblog.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false
 }))
 
 app.use("/api/auth", userRoutes)
