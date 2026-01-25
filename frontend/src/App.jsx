@@ -27,7 +27,8 @@ function App() {
       try {
         const token = await requestNotificationPermission();
         if (token) {
-          await fetch("http://localhost:8000/api/auth/save-fcm-token", {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+          await fetch(`${apiUrl}/auth/save-fcm-token`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
