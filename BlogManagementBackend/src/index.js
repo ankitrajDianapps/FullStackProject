@@ -23,7 +23,7 @@ connectDB()
 // CORS
 
 app.use(cors({
-    origin: "https://bms-dekhoblog.onrender.com/"
+    origin: "https://bms-dekhoblog.onrender.com"
 }))
 
 app.use("/api/auth", userRoutes)
