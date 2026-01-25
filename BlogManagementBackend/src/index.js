@@ -14,11 +14,17 @@ const { trendingPosts } = require('./cron/TrendingPost.js')
 const inActiveUserCleanup = require('./cron/InActiveUserCleanup.js')
 const { InActiveUserCleanup } = require("./cron/InActiveUserCleanup.js")
 const { messages } = require('./messages/apiResponses.js')
-
+const cors = require("cors")
 const app = express()
 
 app.use(express.json())
 connectDB()
+
+// CORS
+
+app.use(cors({
+    origin: "https://bms-dekhoblog.onrender.com/"
+}))
 
 app.use("/api/auth", userRoutes)
 app.use("/api/posts", postRoutes)
@@ -46,3 +52,4 @@ app.listen(port, () => {
     console.log("Server is listening at port 8000")
 
 })
+
