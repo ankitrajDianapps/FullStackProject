@@ -42,7 +42,7 @@ module.exports.registerUser = async (req, res) => {
         // res.status(err.statusCode || 500).send(err.message)
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -70,7 +70,7 @@ module.exports.loginUser = async (req, res) => {
         userLogger.error(err.message, { function: "loginUser" })
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -96,7 +96,7 @@ module.exports.logoutUser = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false,
         })
@@ -128,7 +128,7 @@ module.exports.updateUser = async (req, res) => {
         }
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false,
         })
@@ -149,7 +149,7 @@ module.exports.getUserById = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false,
         })
@@ -190,7 +190,7 @@ module.exports.refresh = async (req, res) => {
         console.log(err)
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -215,7 +215,7 @@ module.exports.saveFcmToken = async (req, res) => {
         console.log(err.message)
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false,
         })

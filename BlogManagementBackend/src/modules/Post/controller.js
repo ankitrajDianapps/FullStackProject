@@ -20,7 +20,7 @@ module.exports.createPost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -44,7 +44,7 @@ module.exports.getAllPublishedPosts = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -69,7 +69,7 @@ module.exports.getPostById = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -98,7 +98,7 @@ module.exports.updatePost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -121,7 +121,7 @@ module.exports.deletePost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -147,7 +147,7 @@ module.exports.publishDraftPost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -172,7 +172,7 @@ module.exports.getOwnPosts = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -198,7 +198,7 @@ module.exports.likePost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -222,7 +222,7 @@ module.exports.unlikePost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })

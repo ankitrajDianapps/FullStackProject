@@ -20,7 +20,7 @@ module.exports.addComment = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -44,7 +44,7 @@ module.exports.getAllComments = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -71,7 +71,7 @@ module.exports.updateComment = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -93,7 +93,7 @@ module.exports.deleteComment = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })

@@ -16,7 +16,7 @@ module.exports.getDashBoard = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -40,7 +40,7 @@ module.exports.postAnalytics = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -65,7 +65,7 @@ module.exports.todaystrendingPost = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
@@ -90,7 +90,7 @@ module.exports.authorPerformaceMetrics = async (req, res) => {
     } catch (err) {
         return apiResponse({
             res,
-            code: err.statusCode,
+            code: err.statusCode || 500,
             message: err.message,
             status: false
         })
