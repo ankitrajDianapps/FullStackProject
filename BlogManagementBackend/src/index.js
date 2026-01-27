@@ -1,5 +1,6 @@
 const express = require('express')
 const path = require('path')
+const fs = require('fs')
 require("dotenv").config()
 
 const { connectDB } = require('./config/db.js')
@@ -22,7 +23,12 @@ app.use(express.json())
 connectDB()
 
 // Serve static files from the frontend/dist directory
-app.use(express.static(path.join(__dirname, "../../frontend/dist")))
+const frontendPath = path.join(__dirname, "../../frontend/dist");
+if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+} else {
+    console.warn("WARNING: frontend/dist directory not found. Static files will not be served.");
+}
 
 // CORS
 
@@ -49,7 +55,15 @@ app.use("/api", (req, res) => {
 
 // SPA Catch-all: serve index.html for any other routes
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
+    const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).json({
+            success: false,
+            message: "Frontend build not found. Please run 'npm run build' in the frontend directory."
+        });
+    }
 });
 
 

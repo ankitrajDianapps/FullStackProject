@@ -1,0 +1,15 @@
+{
+    "name": "blog-management-system-root",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "install-all": "npm install && cd BlogManagementBackend && npm install && cd ../frontend && npm install",
+        "build:frontend": "cd frontend && npm run build",
+        "build": "npm run install-all && npm run build:frontend",
+        "start": "cd BlogManagementBackend && npm start",
+        "dev": "concurrently \"cd BlogManagementBackend && npm run dev\" \"cd frontend && npm run dev\""
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
