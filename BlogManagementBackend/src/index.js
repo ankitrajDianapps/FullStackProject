@@ -54,7 +54,7 @@ app.use("/api", (req, res) => {
 });
 
 // SPA Catch-all: serve index.html for any other routes
-app.get('*', (req, res) => {
+app.get('/*any', (req, res) => {
     const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
