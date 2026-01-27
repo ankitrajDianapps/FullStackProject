@@ -22,10 +22,9 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Optional: Dispatch a custom event or use a callback if needed
-            // But for now, we leave it to components to handle or just let it fail
-            // We can clear token here though
-            // localStorage.removeItem('token');
+            localStorage.removeItem('token');
+            // Force redirect to login page for unauthorized access
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     }
