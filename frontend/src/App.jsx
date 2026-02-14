@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import PostDetails from './pages/PostDetails';
 import CreatePost from './pages/CreatePost';
 import MyPosts from './pages/MyPosts';
+import Drafts from './pages/Drafts';
 import Profile from './pages/Profile';
 import Feed from './pages/Feed';
 import Explore from './pages/Explore';
@@ -66,6 +67,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/my-posts" element={<MyPosts />} />
+        <Route path="/drafts" element={<Drafts />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/posts/:id" element={<PostDetails />} />
       </Route>

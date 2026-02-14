@@ -31,12 +31,24 @@ if (fs.existsSync(frontendPath)) {
 }
 
 // CORS
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://bms-dekhoblog.onrender.com",
+    process.env.FRONTEND_ORIGIN
+].filter(Boolean);
 
 app.use(cors({
-    origin: "https://bms-dekhoblog.onrender.com",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: false
+    credentials: true
 }))
 
 app.use("/api/auth", userRoutes)
@@ -73,9 +85,8 @@ cron.schedule("*/2 * * * *", trendingPosts)
 
 cron.schedule("0 0 */7 * *", inActiveUserCleanup)
 
-port = process.env.PORT || 5000
+const port = process.env.PORT || 5000
 app.listen(port, () => {
-    console.log("Server is listening at port 8000")
-
+    console.log(`Server is listening at port ${port}`)
 })
 

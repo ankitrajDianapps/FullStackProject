@@ -137,12 +137,18 @@ const getPostById = async (req) => {
             throw new AppError(messages.INVALID_ID_FORMAT, 400)
         }
 
-        const post = await Post.findOne(
+        let post = await Post.findOne(
             { _id: id, status: "published" }
         ).populate('author', 'fullName userName bio avatar')
 
+        // If not found as published, allow the author to view their own draft
+        if (!post) {
+            post = await Post.findOne(
+                { _id: id, status: "draft", author: user._id }
+            ).populate('author', 'fullName userName bio avatar')
+        }
+
         if (!post) throw new AppError(messages.POST_NOT_FOUND, 404)
-        // console.log(post)
 
         //! now determine total comments on this post
         const commentCount = await Comment.countDocuments({ post: post._id, isDeleted: false })
@@ -156,23 +162,21 @@ const getPostById = async (req) => {
             isLikedByUser: !!isLikedByUser
         }
 
-        //! now we will update view count by matching is this post already viewed by the same user then dont update othewise update
+        //! now we will update view count only for published posts
+        if (post.status === "published") {
+            const postviewDetail = await PostView.find({ post_id: post._id, user_id: user._id })
 
-        const postviewDetail = await PostView.find({ post_id: post._id, user_id: user._id })
+            if (postviewDetail.length == 0) {
+                await PostView.create({
+                    post_id: id,
+                    user_id: user._id,
+                    ip_address: req.ip,
+                    user_agent: ua,
+                    viewed_at: new Date()
+                })
 
-
-        if (postviewDetail.length == 0) {
-            await PostView.create({
-                post_id: id,
-                user_id: user._id,
-                ip_address: req.ip,
-                user_agent: ua,
-                viewed_at: new Date()
-
-            })
-
-            //also increment the value of view-count for the post table
-            await Post.updateOne({ _id: id }, { $inc: { viewCount: 1 } })
+                await Post.updateOne({ _id: id }, { $inc: { viewCount: 1 } })
+            }
         }
 
         return responsePost
@@ -228,7 +232,7 @@ const updatePost = async (post, id, user, draftToPublish) => {
         if (draftToPublish) postToUpdate.status = "published"
 
         //  due to any reason from the server side , if it create the same slug for two posts then in that case lets check and throw internal server Error
-        const isPostSlugExists = await Post.exists({ slug: postToUpdate?.slug })
+        const isPostSlugExists = await Post.exists({ slug: postToUpdate?.slug, _id: { $ne: id } })
         if (isPostSlugExists) {
             postLogger.warn("same slug already exist")
             throw new AppError("Internal Server Error", 500)

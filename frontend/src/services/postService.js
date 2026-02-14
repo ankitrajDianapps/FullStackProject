@@ -10,6 +10,11 @@ export const getOwnPosts = async () => {
     return response.data;
 };
 
+export const getDraftPosts = async () => {
+    const response = await api.get('/posts/my-drafts');
+    return response.data;
+};
+
 export const getPostById = async (id) => {
     const response = await api.get(`/posts/${id}`);
     return response.data;

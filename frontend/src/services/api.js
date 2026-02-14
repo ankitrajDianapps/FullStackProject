@@ -22,9 +22,14 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
-            // Force redirect to login page for unauthorized access
-            window.location.href = '/login';
+            // Don't redirect to /login if the failing request is the login API itself
+            const requestUrl = error.config?.url || '';
+            const isLoginRequest = requestUrl.includes('/auth/login');
+            if (!isLoginRequest) {
+                localStorage.removeItem('token');
+                // Force redirect to login page for unauthorized access
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

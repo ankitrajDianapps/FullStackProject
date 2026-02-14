@@ -132,9 +132,7 @@ module.exports.deletePost = async (req, res) => {
 
 module.exports.publishDraftPost = async (req, res) => {
     try {
-        await validatePostUpdate(req.body)
-
-        const updatedPost = await postService.updatePost(req.body, req.params.id, req.user, true)
+        const updatedPost = await postService.updatePost({}, req.params.id, req.user, true)
 
         return apiResponse({
             res,
@@ -230,3 +228,24 @@ module.exports.unlikePost = async (req, res) => {
 }
 
 
+module.exports.getDraftPosts = async (req, res) => {
+    try {
+        const posts = await Post.find({ author: req.user._id, status: "draft" }).populate('author', 'fullName userName avatar')
+
+        return apiResponse({
+            res,
+            code: 200,
+            message: "Draft posts fetched successfully",
+            status: true,
+            data: posts
+        })
+
+    } catch (err) {
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false
+        })
+    }
+}

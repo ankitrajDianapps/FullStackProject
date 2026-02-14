@@ -40,7 +40,6 @@ module.exports.trendingPosts = async () => {
 
         // first check does the trendingPost table contains the document of todays date
         const todaysTrendingPost = await TrendingPost.find({ trending_at: { $gt: twoMinuteAgo } })
-
         if (todaysTrendingPost.length > 0) {
             console.log("trending post already updated")
             return

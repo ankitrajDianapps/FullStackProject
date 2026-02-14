@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, PlusSquare, LogOut, Menu, X, User, Compass } from 'lucide-react';
+import { LayoutDashboard, FileText, PlusSquare, LogOut, Menu, X, User, Compass, FileClock } from 'lucide-react';
 import { clsx } from 'clsx';
 import { DEFAULT_PROFILE_IMAGE } from '../utils/constants';
 
@@ -15,6 +15,7 @@ const DashboardLayout = () => {
         { name: 'Feed', href: '/feed', icon: Compass },
         { name: 'Profile', href: '/profile', icon: User },
         { name: 'My Posts', href: '/my-posts', icon: FileText },
+        { name: 'My Drafts', href: '/drafts', icon: FileClock },
         { name: 'Create Post', href: '/create-post', icon: PlusSquare },
     ];
 

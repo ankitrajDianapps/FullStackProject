@@ -30,23 +30,9 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await loginApi({ email, password });
 
-            // Backend returns: { token: { accessToken, ... } } wrapped in apiResponse data
-            // So response might be just the object if interceptor or apiService unwraps it
-            // apiService.login returns response.data.
-            // controller returns { success: true, data: { token: ... } }
-            // So loginApi returns { token: ... } if we assume apiService returns response.data
-
-            // Let's verify authService.js
-            // const response = await api.post('/auth/login', credentials);
-            // return response.data;
-
-            // So if backend returns { success:true, data: { token: { accessToken } } }
-            // then authService returns { success:true, data: { token: { accessToken } } }
-
             if (response && response.data && response.data.token && response.data.token.accessToken) {
                 localStorage.setItem('token', response.data.token.accessToken);
                 const profile = await getProfile();
-                // Profile response: { success: true, data: user }
                 if (profile.data) {
                     setUser(profile.data);
                 }
@@ -55,7 +41,9 @@ export const AuthProvider = ({ children }) => {
             return false;
         } catch (error) {
             console.error("Login error", error);
-            return false;
+            // Extract the actual error message from the backend response
+            const message = error.response?.data?.message || 'Login failed. Please try again.';
+            throw new Error(message);
         }
     };
 

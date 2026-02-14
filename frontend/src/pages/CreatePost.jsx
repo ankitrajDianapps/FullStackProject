@@ -40,8 +40,13 @@ const CreatePost = () => {
             const response = await createPost(payload);
 
             if (response.status) {
-                toast.success('Post created successfully!');
-                navigate(`/posts/${response.data._id}`);
+                if (formData.status === 'draft') {
+                    toast.success('Draft saved successfully!');
+                    navigate('/drafts');
+                } else {
+                    toast.success('Post published successfully!');
+                    navigate(`/posts/${response.data._id}`);
+                }
             } else {
                 setError('Failed to create post');
                 toast.error('Failed to create post');

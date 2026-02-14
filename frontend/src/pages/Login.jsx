@@ -30,7 +30,8 @@ const Login = () => {
                 toast.error('Invalid credentials');
             }
         } catch (err) {
-            toast.error('Login failed. Please try again.');
+            // Show the actual error message from the server
+            toast.error(err.message || 'Login failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
