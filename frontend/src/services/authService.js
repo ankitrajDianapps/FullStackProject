@@ -24,6 +24,43 @@ export const register = async (userData) => {
     return response.data;
 };
 
+export const sendSignupOTP = async (userData) => {
+    const formData = new FormData();
+
+    const { avatar, ...dataPayload } = userData;
+
+    formData.append('data', JSON.stringify(dataPayload));
+    if (avatar) {
+        formData.append('avatar', avatar);
+    }
+
+    const response = await api.post('/auth/send-signup-otp', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
+export const verifySignupOTP = async (userData, otp) => {
+    const formData = new FormData();
+
+    const { avatar, ...dataPayload } = userData;
+
+    formData.append('data', JSON.stringify(dataPayload));
+    formData.append('otp', otp);
+    if (avatar) {
+        formData.append('avatar', avatar);
+    }
+
+    const response = await api.post('/auth/verify-signup-otp', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response.data;
+};
+
 export const logout = async () => {
     try {
         await api.post('/auth/logout');
@@ -42,5 +79,20 @@ export const getProfile = async () => {
 
 export const getUserById = async (userId) => {
     const response = await api.get(`/auth/${userId}`);
+    return response.data;
+};
+
+export const forgotPassword = async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+};
+
+export const verifyOtp = async (email, otp) => {
+    const response = await api.post('/auth/verify-otp', { email, otp });
+    return response.data;
+};
+
+export const changePassword = async (token, newPassword) => {
+    const response = await api.post('/auth/change-password', { token, newPassword });
     return response.data;
 };

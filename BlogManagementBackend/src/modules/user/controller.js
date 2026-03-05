@@ -14,6 +14,62 @@ const { apiResponse } = require("../../config/responseHandler.js");
 const { User } = require("../../model/User.js");
 const { promises } = require("dns");
 
+module.exports.sendSignupOTP = async (req, res) => {
+    try {
+        const parsedData = JSON.parse(req.body.data)
+        await validateUser(parsedData);
+
+        const result = await userService.sendSignupOTP(parsedData, req.file)
+
+        return apiResponse({
+            res,
+            code: 200,
+            message: "OTP sent to your email",
+            status: true,
+            data: result
+        })
+    } catch (err) {
+        if (req.file) fs.unlinkSync(req.file.path)
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false
+        })
+    }
+}
+
+module.exports.verifySignupOTP = async (req, res) => {
+    try {
+        const parsedData = JSON.parse(req.body.data)
+        const { otp } = req.body
+
+        if (!otp) {
+            throw new AppError("OTP is required", 400)
+        }
+
+        await validateUser(parsedData);
+
+        const user = await userService.verifySignupOTP(parsedData, req.file, otp)
+
+        return apiResponse({
+            res,
+            code: 201,
+            message: "User created successfully",
+            status: true,
+            data: user
+        })
+    } catch (err) {
+        if (req.file) fs.unlinkSync(req.file.path)
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false
+        })
+    }
+}
+
 module.exports.registerUser = async (req, res) => {
     try {
 
@@ -220,4 +276,66 @@ module.exports.saveFcmToken = async (req, res) => {
             status: false,
         })
     }
-}   
+}
+
+module.exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        await userService.forgotPassword(email);
+        return apiResponse({
+            res,
+            code: 200,
+            message: "OTP sent to your email",
+            status: true,
+        })
+    } catch (err) {
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false,
+        })
+    }
+}
+
+module.exports.verifyOtp = async (req, res) => {
+    try {
+        const { otp, email } = req.body;
+        const data = await userService.verifyOtp(otp, email);
+        return apiResponse({
+            res,
+            code: 200,
+            message: "OTP verified successfully",
+            status: true,
+            data: data
+        })
+    } catch (err) {
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false,
+        })
+    }
+}
+
+module.exports.changePassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        const data = await userService.changePassword(token, newPassword);
+        return apiResponse({
+            res,
+            code: 200,
+            message: "Password changed successfully",
+            status: true,
+            data: data
+        })
+    } catch (err) {
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false,
+        })
+    }
+}

@@ -1,11 +1,15 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import LandingPage from './pages/LandingPage';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyOtp from './pages/VerifyOtp';
+import ResetPassword from './pages/ResetPassword';
+import VerifySignupOtp from './pages/VerifySignupOtp';
 
 import Dashboard from './pages/Dashboard';
 import PostDetails from './pages/PostDetails';
@@ -15,7 +19,7 @@ import Drafts from './pages/Drafts';
 import Profile from './pages/Profile';
 import Feed from './pages/Feed';
 import Explore from './pages/Explore';
-import { requestNotificationPermission, onforegroundMessage } from './firebase/firebaseMessaging';
+// import { requestNotificationPermission, onforegroundMessage } from './firebase/firebaseMessaging';
 const NotFound = () => <div className="text-center mt-20 text-2xl">404 - Page Not Found</div>;
 
 function App() {
@@ -23,26 +27,26 @@ function App() {
   //-----------------------------------------------------------------------
   ///working on the notification
 
-  useEffect(() => {
-    const getToken = async () => {
-      try {
-        const token = await requestNotificationPermission();
-        if (token) {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-          await fetch(`${apiUrl}/auth/save-fcm-token`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ token }),
-          });
-        }
-      } catch (error) {
-        console.log("Error getting token:", error);
-      }
-    };
-    getToken();
-  }, []);
+  // useEffect(() => {
+  //   const getToken = async () => {
+  //     try {
+  //       const token = await requestNotificationPermission();
+  //       if (token) {
+  //         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  //         await fetch(`${apiUrl}/auth/save-fcm-token`, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({ token }),
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.log("Error getting token:", error);
+  //     }
+  //   };
+  //   getToken();
+  // }, []);
 
   //-----------------------------------------------------------------------
   return (
@@ -54,6 +58,10 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-signup-otp" element={<VerifySignupOtp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* Protected Routes */}

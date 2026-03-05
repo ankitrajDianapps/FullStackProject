@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
+import { sendSignupOTP } from '../services/authService';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 
@@ -17,7 +15,6 @@ const Register = () => {
         avatar: null,
     });
     const [isLoading, setIsLoading] = useState(false);
-    const { register } = useAuth();
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -34,7 +31,7 @@ const Register = () => {
         setIsLoading(true);
 
         try {
-            const success = await register({
+            const userData = {
                 userName: formData.userName,
                 fullName: formData.fullName,
                 email: formData.email,
@@ -43,11 +40,15 @@ const Register = () => {
                 avatar: formData.avatar,
                 role: formData.role,
                 isActive: true
-            });
+            };
 
-            if (success) {
-                toast.success('Account created! Please sign in.');
-                navigate('/login');
+            const response = await sendSignupOTP(userData);
+
+            if (response.status) {
+                toast.success('OTP sent to your email!');
+                navigate('/verify-signup-otp', { state: { userData } });
+            } else {
+                toast.error(response.message || 'Failed to send OTP');
             }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Registration failed');
@@ -171,7 +172,7 @@ const Register = () => {
                                         {isLoading ? (
                                             <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                         ) : (
-                                            "REGISTER"
+                                            "SEND OTP"
                                         )}
                                     </button>
                                 </div>
