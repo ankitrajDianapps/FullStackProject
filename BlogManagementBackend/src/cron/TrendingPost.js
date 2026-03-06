@@ -28,7 +28,7 @@ module.exports.trendingPosts = async () => {
             }
         ]).sort({ view_count: -1 }).limit(3)
 
-        // console.log(trendingPost)
+        console.log(trendingPost)
 
         // now save these two posts in the  trending post table
 

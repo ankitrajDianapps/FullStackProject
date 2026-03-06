@@ -113,51 +113,7 @@ const verifySignupOTP = async (data, file, otp) => {
     }
 }
 
-const registerUser = async (data, file) => {
-
-    try {
-
-        const hashedPassword = await bcrypt.hash(data.password, 10)
-
-        //lets check if  user with same  email or username alreay exist
-        const isUserNameExists = await User.findOne(
-            { userName: data.userName }
-        )
-
-        if (isUserNameExists) {
-            throw new AppError("userName already exists", 409)
-        }
-
-        const isEmailExists = await User.findOne(
-            { email: data.email }
-        )
-        if (isEmailExists) {
-            throw new AppError("email already exists", 409)
-        }
-
-        const registeredUser = await User.create(
-            {
-                userName: data.userName,
-                email: data.email,
-                role: data.role,
-                password: hashedPassword,
-                bio: data.bio,
-                fullName: data.fullName,
-                isActive: data.isActive,
-                avatar: file?.filename
-            }
-        )
-
-        const { password, ...safeUser } = registeredUser.toObject()
-        return safeUser;
-    } catch (err) {
-        console.log(err)
-        serviceLogger.error(err.message, { function: "registerUser" })
-        throw new AppError(err.message, err.statusCode)
-    }
-
-}
-
+// verifySignupOTP handles final user registration
 
 const loginUser = async (req) => {
     try {
@@ -358,7 +314,6 @@ const changePassword = async (token, newPassword) => {
 }
 
 module.exports = {
-    registerUser,
     loginUser,
     updateUser,
     getUserById,

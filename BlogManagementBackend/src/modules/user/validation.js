@@ -64,3 +64,13 @@ module.exports.validateUserUpdate = async (data) => {
     if (data.avatar && typeof data.avatar != "string") throw new AppError("Avatar url must be String", 400)
 
 }
+
+module.exports.validateOtpRequest = async (data) => {
+    if (!data.userName || !data.email || !data.fullName) {
+        throw new AppError("Username, Email, and Full Name are required", 400);
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+        throw new AppError("Invalid Email format", 400);
+    }
+}

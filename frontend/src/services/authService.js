@@ -25,20 +25,9 @@ export const register = async (userData) => {
 };
 
 export const sendSignupOTP = async (userData) => {
-    const formData = new FormData();
-
+    // Only send the necessary data (exclude avatar which isn't used until verification)
     const { avatar, ...dataPayload } = userData;
-
-    formData.append('data', JSON.stringify(dataPayload));
-    if (avatar) {
-        formData.append('avatar', avatar);
-    }
-
-    const response = await api.post('/auth/send-signup-otp', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
+    const response = await api.post('/auth/send-signup-otp', dataPayload);
     return response.data;
 };
 

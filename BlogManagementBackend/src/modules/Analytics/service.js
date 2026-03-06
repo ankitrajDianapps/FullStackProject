@@ -92,7 +92,7 @@ const postAnalytics = async (req) => {
 const todaysTrendingPost = async () => {
     try {
         // Query the TrendingPost collection for posts marked as trending today (last 24h)
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = new Date(Date.now() - 2 * 60 * 1000);
 
         const trendingDocs = await TrendingPost.find({
             trending_at: { $gte: twentyFourHoursAgo }
@@ -108,6 +108,8 @@ const todaysTrendingPost = async () => {
             console.log("No trending posts found in TrendingPost collection for today");
             return [];
         }
+
+        console.log(trendingDocs)
 
         // Return the actual post objects
         return trendingDocs.map(doc => doc.post).filter(Boolean);

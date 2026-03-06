@@ -1,5 +1,5 @@
 const { logger } = require("../../utils/logging.js");
-const { validateUser, validateLogin, validateUserUpdate } = require("./validation.js");
+const { validateUser, validateLogin, validateUserUpdate, validateOtpRequest } = require("./validation.js");
 const userService = require("./service.js");
 const AppError = require("../../utils/AppError.js");
 const userLogger = logger.child({ module: "userController" })
@@ -16,10 +16,10 @@ const { promises } = require("dns");
 
 module.exports.sendSignupOTP = async (req, res) => {
     try {
-        const parsedData = JSON.parse(req.body.data)
-        await validateUser(parsedData);
+        const parsedData = req.body;
+        await validateOtpRequest(parsedData);
 
-        const result = await userService.sendSignupOTP(parsedData, req.file)
+        const result = await userService.sendSignupOTP(parsedData);
 
         return apiResponse({
             res,
@@ -29,7 +29,6 @@ module.exports.sendSignupOTP = async (req, res) => {
             data: result
         })
     } catch (err) {
-        if (req.file) fs.unlinkSync(req.file.path)
         return apiResponse({
             res,
             code: err.statusCode || 500,
@@ -69,42 +68,6 @@ module.exports.verifySignupOTP = async (req, res) => {
         })
     }
 }
-
-module.exports.registerUser = async (req, res) => {
-    try {
-
-        // console.log(req.body)
-        //data from the formdata comes as the string so we need to parse it
-        const parsedData = JSON.parse(req.body.data)
-
-        // console.log(parsedData)
-
-        await validateUser(parsedData);
-
-        const user = await userService.registerUser(parsedData, req.file)
-
-        return apiResponse({
-            res,
-            code: 201,
-            message: "User created successfully",
-            status: true,
-            data: user
-        })
-
-    } catch (err) {
-        //if any error occured then delete from the disk
-        if (req.file) fs.unlinkSync(req.file.path)
-
-        // res.status(err.statusCode || 500).send(err.message)
-        return apiResponse({
-            res,
-            code: err.statusCode || 500,
-            message: err.message,
-            status: false
-        })
-    }
-}
-
 
 
 module.exports.loginUser = async (req, res) => {
@@ -193,6 +156,7 @@ module.exports.updateUser = async (req, res) => {
 
 
 module.exports.getUserById = async (req, res) => {
+    console.log("--------------------------------------")
     try {
         const user = await userService.getUserById(req.params.userId)
         return apiResponse({
