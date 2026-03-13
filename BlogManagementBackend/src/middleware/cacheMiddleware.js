@@ -1,7 +1,7 @@
 const NodeCache = require("node-cache");
 const cache = new NodeCache();
 
-module.exports.cacheMiddleware = (duration) => {
+const cacheMiddleware = (duration) => {
     return (req, res, next) => {
         if (req.method !== "GET") {
             return next();
@@ -23,4 +23,22 @@ module.exports.cacheMiddleware = (duration) => {
             next();
         }
     };
+};
+
+const clearCache = (prefix) => {
+    if (prefix) {
+        const keys = cache.keys();
+        keys.forEach(key => {
+            if (key.startsWith(prefix)) {
+                cache.del(key);
+            }
+        });
+    } else {
+        cache.flushAll();
+    }
+};
+
+module.exports = {
+    cacheMiddleware,
+    clearCache
 };

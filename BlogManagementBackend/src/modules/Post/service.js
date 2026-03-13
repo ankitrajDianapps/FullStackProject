@@ -10,6 +10,7 @@ const AppError = require("../../utils/AppError.js")
 const { default: mongoose, mongo } = require("mongoose")
 const admin = require("firebase-admin")
 const { messages } = require("../../messages/apiResponses.js")
+const { clearCache } = require("../../middleware/cacheMiddleware.js")
 
 const createPost = async (data, user) => {
     try {
@@ -28,7 +29,7 @@ const createPost = async (data, user) => {
         }
 
         // now we create the post
-        const post = await Post.create(
+        const post = new Post(
             {
                 title: data.title,
                 slug: slug,
@@ -43,8 +44,13 @@ const createPost = async (data, user) => {
                 publishedAt: new Date()
             }
         )
+        const savedPost = await post.save()
 
-        return post;
+        // Invalidate list cache and overview
+        clearCache("/api/posts");
+        clearCache("/api/analytics/overview");
+
+        return savedPost
 
 
     } catch (err) {
@@ -244,6 +250,12 @@ const updatePost = async (post, id, user, draftToPublish) => {
             { new: true }
         )
 
+        // Invalidate caches
+        clearCache(`/api/posts/${id}`);
+        clearCache("/api/posts"); // list could have changed
+        clearCache(`/api/analytics/post/${id}`);
+        clearCache("/api/analytics/overview");
+
         return updatedPost;
     } catch (err) {
         // postLogger.error(err.message, { function: "updatePost" })
@@ -269,10 +281,19 @@ const deletePost = async (id, user) => {
 
         // now lets delete the post
 
-        const deletedPost = await Post.deleteOne({ _id: id })
+        await Post.deleteOne({ _id: id })
+
+        // Invalidate caches
+        clearCache(`/api/posts/${id}`);
+        clearCache("/api/posts");
+        clearCache(`/api/comments/${id}`);
+        clearCache(`/api/analytics/post/${id}`);
+        clearCache("/api/analytics/overview");
 
         //delete all the comments of it
         await Comment.deleteMany({ post: id })
+
+        return
 
     } catch (err) {
         postLogger.error(err.message, { function: "deletePost" })
@@ -314,6 +335,10 @@ const likePost = async (req) => {
             })
         }
 
+        // Invalidate caches
+        clearCache(`/api/posts/${postId}`);
+        clearCache(`/api/analytics/post/${postId}`);
+
         return "Post Liked successfully"
     } catch (err) {
         postLogger.error(err.message, { function: "likePost" })
@@ -342,6 +367,10 @@ const unlikePost = async (req) => {
         if (isLiked) {
             await Like.deleteOne({ post_id: postId, user: user._id })
         }
+
+        // Invalidate caches
+        clearCache(`/api/posts/${postId}`);
+        clearCache(`/api/analytics/post/${postId}`);
 
         return "Post unliked successfully";
 

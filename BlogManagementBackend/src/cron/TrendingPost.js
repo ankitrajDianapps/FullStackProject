@@ -3,6 +3,7 @@ const trendingLogger = logger.child({ module: "trendingPost" })
 
 const { PostView } = require("../model/PostView.js")
 const { TrendingPost } = require("../model/trendingPost.js")
+const { clearCache } = require("../middleware/cacheMiddleware.js")
 
 
 module.exports.trendingPosts = async () => {
@@ -47,6 +48,10 @@ module.exports.trendingPosts = async () => {
 
         // now push the todays trending post in the table
         await TrendingPost.insertMany(trendinngPostToInsert)
+
+        // Invalidate trending cache
+        clearCache("/api/analytics/trending");
+
         console.log("trending post cron execution completed")
 
         // console.log(trendinngPostToInsert)

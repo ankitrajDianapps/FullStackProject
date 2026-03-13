@@ -7,6 +7,8 @@ const { Post } = require("../../model/Post.js")
 const { Comment } = require("../../model/Comment.js")
 const { messages } = require("../../messages/apiResponses.js")
 
+const { cacheMiddleware, clearCache } = require("../../middleware/cacheMiddleware.js")
+
 const addComment = async (comment, postId, parentCommentId, user) => {
     try { //NOTE : here the user is one who comments on the post
 
@@ -36,6 +38,13 @@ const addComment = async (comment, postId, parentCommentId, user) => {
 
         await newComment.populate("user", "userName avatar fullName")
         await newComment.populate("post", "title")
+
+        // Invalidate caches
+        clearCache(`/api/comments/${postId}`);
+        clearCache(`/api/analytics/post/${postId}`);
+        clearCache("/api/analytics/overview");
+        clearCache("/api/posts"); // Comment count in list changed
+
         return newComment
 
 
@@ -58,8 +67,16 @@ const getAllComments = async (postId, parentCommentId) => {
 
         // console.log(parentCommentId)
 
-        //if post exist then determine the comments of that post
-        const comment = await Comment.find({ post: postId, parentCommentId: parentCommentId }).populate("user", "userName avatar fullName")
+        // Determine query for top-level or child comments
+        const query = { post: postId };
+        if (parentCommentId) {
+            query.parentCommentId = parentCommentId;
+        } else {
+            // Find comments with no parent (top-level)
+            query.parentCommentId = { $in: [null, undefined] };
+        }
+
+        const comment = await Comment.find(query).populate("user", "userName avatar fullName")
 
         return comment
 
@@ -85,11 +102,16 @@ const updateComment = async (id, content, user) => {
         }
 
         //now update the comment
+        const updateData = { content: content, isEdited: true };
         const updatedComment = await Comment.findByIdAndUpdate(
             id,
-            { content: content, isEdited: true },
+            updateData,
             { new: true }
         )
+
+        // Invalidate caches
+        clearCache(`/api/comments/${updatedComment.post}`);
+        clearCache(`/api/analytics/post/${updatedComment.post}`);
 
         return updatedComment
 
@@ -117,6 +139,13 @@ const deleteComment = async (id, user) => {
         // we will  not delete the comment , instead we mark it as isDeleted false an make its content as comment deleted  but its replies still  exists
 
         await Comment.updateOne({ _id: id }, { isDeleted: true, content: "content deleted" })
+
+        // Invalidate caches
+        clearCache(`/api/comments/${comment.post}`);
+        clearCache(`/api/analytics/post/${comment.post}`);
+        clearCache("/api/analytics/overview");
+        clearCache("/api/posts");
+
         return;
 
     } catch (err) {

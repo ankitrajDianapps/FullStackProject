@@ -22,7 +22,8 @@ const getDashBoard = async (user) => {
         const aggregateViewsResult = await Post.aggregate([
             {
                 $match: {
-                    author: new mongoose.Types.ObjectId(user._id)
+                    author: new mongoose.Types.ObjectId(user._id),
+                    status: "published"
                 }
             },
             {
@@ -73,12 +74,13 @@ const postAnalytics = async (req) => {
 
         const totalViews = post.viewCount
         const commentsCount = await Comment.countDocuments({ post: post._id, isDeleted: false })
-
+        const likesCount = await Like.countDocuments({ post_id: post._id })
         return {
             title: post.title,
             author: post.author.userName,
             totalViews: totalViews,
-            totalComment: commentsCount
+            totalComment: commentsCount,
+            totalLikes: likesCount
         }
 
 

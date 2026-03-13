@@ -14,6 +14,7 @@ const uaParser = require("ua-parser-js")
 const { uploadAvatar } = require("../../utils/Upload.js")
 const { default: mongoose } = require("mongoose")
 const { messages } = require("../../messages/apiResponses.js")
+const { clearCache } = require("../../middleware/cacheMiddleware.js")
 
 
 const serviceLogger = logger.child({ module: "userService " })
@@ -204,6 +205,11 @@ const updateUser = async (data, file, user) => {
                 console.log("unable to delete old avatar from directory : " + err.message)
             }
         }
+
+        // Invalidate caches
+        clearCache(`/api/auth/${user._id}`);
+        clearCache(`/api/analytics/author/${user._id}`);
+        clearCache("/api/analytics/overview"); // In case avatar/username is shown there
 
         return updatedUser
 
