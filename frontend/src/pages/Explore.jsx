@@ -161,7 +161,7 @@ const Explore = () => {
 
             <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
-                    <p className="text-white font-bold text-lg">Blog Management System</p>
+                    <p className="text-white font-bold text-lg">Dekho Blog</p>
                     <p className="text-sm">Join our community to start sharing your own stories.</p>
                     <div className="pt-4 text-xs font-medium uppercase tracking-widest text-gray-600">
                         &copy; 2026 All Rights Reserved

@@ -17,7 +17,7 @@ const LandingPage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="text-center">
                         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6">
-                            Blog Management
+                            Dekho Blog
                             <span className="block text-primary mt-2">Made Simple</span>
                         </h1>
                         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-10">
@@ -168,7 +168,7 @@ const LandingPage = () => {
             {/* Footer */}
             <footer className="bg-gray-900 text-gray-400 py-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <p>&copy; 2026 Blog Management System. All rights reserved.</p>
+                    <p>&copy; 2026 Dekho Blog. All rights reserved.</p>
                 </div>
             </footer>
         </div>

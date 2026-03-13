@@ -20,7 +20,8 @@ const CommentItem = ({
     onReplySubmit,
     submittingReply,
     onDelete,
-    depth = 0
+    depth = 0,
+    parentDeleted = false
 }) => {
     const isOwner = user && comment.user && user._id === comment.user._id;
     const canDelete = isOwner || isPostAuthor;
@@ -28,6 +29,7 @@ const CommentItem = ({
     const commentReplies = replies[comment._id] || [];
     const isLoading = loadingReplies[comment._id];
     const isDeleted = comment.isDeleted || false;
+    const isReplyBlocked = isDeleted || parentDeleted;
 
     return (
         <div className={`group ${depth > 0 ? 'ml-4 lg:ml-8 border-l border-gray-100 pl-4 py-1' : 'border-b border-gray-100 py-3 last:border-0'} ${isDeleted ? 'opacity-60' : ''}`}>
@@ -60,7 +62,7 @@ const CommentItem = ({
 
                     <div className="flex items-center space-x-4 mt-2">
                         {/* Actions Bar */}
-                        {!isDeleted && (
+                        {!isReplyBlocked && (
                             <button
                                 onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                                 className="text-gray-500 hover:text-primary text-xs font-medium flex items-center transition-colors"
@@ -88,7 +90,7 @@ const CommentItem = ({
                     </div>
 
                     {/* Reply Input */}
-                    {replyingTo === comment._id && (
+                    {replyingTo === comment._id && !isReplyBlocked && (
                         <form onSubmit={(e) => onReplySubmit(e, comment._id)} className="mt-2 flex items-start space-x-2 animate-fade-in-down">
                             <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                                 <img src={DEFAULT_PROFILE_IMAGE} alt="User" className="h-full w-full object-cover" />
@@ -138,6 +140,7 @@ const CommentItem = ({
                             submittingReply={submittingReply}
                             onDelete={onDelete}
                             depth={depth + 1}
+                            parentDeleted={isReplyBlocked}
                         />
                     ))}
 

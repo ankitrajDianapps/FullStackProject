@@ -8,7 +8,7 @@ const Navbar = () => {
     return (
         <nav className="w-full py-6 px-8 flex justify-between items-center z-20 relative">
             <Link to="/" className="text-white text-xl font-bold tracking-tight">
-                Blog Management System
+                Dekho Blog
             </Link>
             <div className="hidden md:flex space-x-6 text-white/80 text-sm font-medium items-center">
                 <Link to="/" className="hover:text-white transition-colors text-white font-semibold">Home</Link>

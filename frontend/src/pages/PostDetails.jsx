@@ -108,20 +108,38 @@ const PostDetails = () => {
         e.preventDefault();
         if (!commentText.trim()) return;
 
+        // Optimistic update
+        const tempId = Date.now().toString();
+        const optimisticComment = {
+            _id: tempId,
+            content: commentText,
+            user: user, // user from AuthContext
+            createdAt: new Date().toISOString(),
+            isOptimistic: true
+        };
+
+        setComments(prev => [optimisticComment, ...prev]);
+        const originalCommentText = commentText;
+        setCommentText('');
+
         try {
             setSubmittingComment(true);
-            const response = await addComment(id, commentText);
+            const response = await addComment(id, originalCommentText);
             if (response.status) {
-                setCommentText('');
                 toast.success("Comment added successfully!");
-                // Refresh comments
-                const commentsResponse = await getAllComments(id);
-                if (commentsResponse.status) {
-                    setComments(commentsResponse.data);
-                }
+                // Update the optimistic comment with real data from server
+                setComments(prev => prev.map(c => c._id === tempId ? response.data : c));
+            } else {
+                // Revert optimistic update if backend failed but returned status: false
+                setComments(prev => prev.filter(c => c._id !== tempId));
+                setCommentText(originalCommentText);
+                toast.error("Failed to add comment");
             }
         } catch (err) {
             console.error(err);
+            // Revert optimistic update on error
+            setComments(prev => prev.filter(c => c._id !== tempId));
+            setCommentText(originalCommentText);
             toast.error("Failed to add comment");
         } finally {
             setSubmittingComment(false);
@@ -132,25 +150,56 @@ const PostDetails = () => {
         e.preventDefault();
         if (!replyText.trim()) return;
 
+        // Optimistic update for reply
+        const tempId = Date.now().toString();
+        const optimisticReply = {
+            _id: tempId,
+            content: replyText,
+            user: user,
+            parentCommentId: parentCommentId,
+            createdAt: new Date().toISOString(),
+            isOptimistic: true
+        };
+
+        setReplies(prev => ({
+            ...prev,
+            [parentCommentId]: [optimisticReply, ...(prev[parentCommentId] || [])]
+        }));
+        setExpandedComments(prev => ({ ...prev, [parentCommentId]: true }));
+
+        const originalReplyText = replyText;
+        setReplyText('');
+        setReplyingTo(null);
+
         try {
             setSubmittingReply(true);
-            const response = await addComment(id, replyText, parentCommentId);
+            const response = await addComment(id, originalReplyText, parentCommentId);
             if (response.status) {
-                setReplyText('');
-                setReplyingTo(null);
                 toast.success("Reply added successfully!");
-
-                // If we are replying to a comment, try to refresh that comment's replies if open
-                if (expandedComments[parentCommentId]) {
-                    handleViewReplies(parentCommentId);
-                } else {
-                    // Refresh main comments - though this puts the reply in the nether until viewed
-                    // Ideally we open the replies section
-                    handleViewReplies(parentCommentId);
-                }
+                // Update the optimistic reply with real data from server
+                setReplies(prev => ({
+                    ...prev,
+                    [parentCommentId]: (prev[parentCommentId] || []).map(r => r._id === tempId ? response.data : r)
+                }));
+            } else {
+                // Revert
+                setReplies(prev => ({
+                    ...prev,
+                    [parentCommentId]: (prev[parentCommentId] || []).filter(r => r._id !== tempId)
+                }));
+                setReplyText(originalReplyText);
+                setReplyingTo(parentCommentId);
+                toast.error("Failed to add reply");
             }
         } catch (err) {
             console.error(err);
+            // Revert
+            setReplies(prev => ({
+                ...prev,
+                [parentCommentId]: (prev[parentCommentId] || []).filter(r => r._id !== tempId)
+            }));
+            setReplyText(originalReplyText);
+            setReplyingTo(parentCommentId);
             toast.error("Failed to add reply");
         } finally {
             setSubmittingReply(false);
@@ -210,15 +259,40 @@ const PostDetails = () => {
 
     const handleDeleteComment = async (commentId) => {
         if (window.confirm("Delete this comment?")) {
+            const previousComments = [...comments];
+            const previousReplies = { ...replies };
+
+            // Optimistic update: mark as deleted in top-level comments
+            setComments(prev => prev.map(c =>
+                c._id === commentId ? { ...c, isDeleted: true, content: 'content deleted' } : c
+            ));
+
+            // Optimistic update: mark as deleted in replies
+            setReplies(prev => {
+                const newReplies = { ...prev };
+                Object.keys(newReplies).forEach(parentId => {
+                    newReplies[parentId] = newReplies[parentId].map(r =>
+                        r._id === commentId ? { ...r, isDeleted: true, content: 'content deleted' } : r
+                    );
+                });
+                return newReplies;
+            });
+
             try {
-                await deleteComment(commentId);
-                toast.success("Comment deleted");
-                // Refresh comments
-                const commentsResponse = await getAllComments(id);
-                if (commentsResponse.status) {
-                    setComments(commentsResponse.data);
+                const response = await deleteComment(commentId);
+                if (response.status) {
+                    toast.success("Comment deleted");
+                } else {
+                    // Revert if backend failed
+                    setComments(previousComments);
+                    setReplies(previousReplies);
+                    toast.error("Failed to delete comment");
                 }
             } catch (err) {
+                console.error(err);
+                // Revert on error
+                setComments(previousComments);
+                setReplies(previousReplies);
                 toast.error("Failed to delete comment");
             }
         }
@@ -391,6 +465,10 @@ const PostDetails = () => {
                                         <div className="bg-purple-50 p-4 rounded-lg text-center col-span-2">
                                             <p className="text-3xl font-bold text-purple-600">{analyticsData.totalComment || 0}</p>
                                             <p className="text-xs uppercase text-purple-500 font-bold mt-1">Total Comments</p>
+                                        </div>
+                                        <div className="bg-red-50 p-4 rounded-lg text-center col-span-2">
+                                            <p className="text-3xl font-bold text-red-600">{analyticsData.totalLikes || 0}</p>
+                                            <p className="text-xs uppercase text-red-500 font-bold mt-1">Total Likes</p>
                                         </div>
                                     </div>
 

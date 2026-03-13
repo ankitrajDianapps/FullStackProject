@@ -37,7 +37,7 @@ const DashboardLayout = () => {
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex items-center justify-center h-20 border-b border-red-100 bg-primary shadow-inner">
-                    <h1 className="text-xl font-bold text-white tracking-wider uppercase">Blog System</h1>
+                    <h1 className="text-xl font-bold text-white tracking-wider uppercase">Dekho Blog</h1>
                 </div>
                 <div className="flex-1 flex flex-col overflow-y-auto">
                     <nav className="flex-1 px-4 py-6 space-y-2">
@@ -95,7 +95,7 @@ const DashboardLayout = () => {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="bg-white shadow-sm md:hidden border-b border-red-50">
                     <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                        <h1 className="text-lg font-bold text-red-800 uppercase tracking-tight">Blog System</h1>
+                        <h1 className="text-lg font-bold text-red-800 uppercase tracking-tight">Dekho Blog</h1>
                         <button
                             onClick={() => setIsSidebarOpen(true)}
                             className="p-2 rounded-md text-red-600 hover:text-red-700 focus:outline-none"
