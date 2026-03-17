@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostById, likePost, unlikePost, deletePost } from '../services/postService';
 import { getAllComments, addComment, deleteComment } from '../services/commentService';
@@ -24,6 +24,8 @@ const PostDetails = () => {
     const [submittingComment, setSubmittingComment] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const likeDebounceTimer = useRef(null);
+    const likeStateRef = useRef(null); // tracks the "original" state before rapid clicks began
 
     // UI States
     const [showComments, setShowComments] = useState(true);
@@ -95,23 +97,40 @@ const PostDetails = () => {
             return;
         }
 
-        // Toggle logic
-        const previousState = isLiked;
-        setIsLiked(!previousState); // Optimistic
-
-        try {
-            if (previousState) {
-                await unlikePost(id);
-                toast.success("Post unliked");
-            } else {
-                await likePost(id);
-                toast.success("Post liked!");
-            }
-        } catch (err) {
-            setIsLiked(previousState); // Revert
-            console.error(err);
-            toast.error(previousState ? "Failed to unlike" : "Failed to like");
+        // On the FIRST click of a rapid sequence, snapshot the server state
+        if (likeStateRef.current === null) {
+            likeStateRef.current = isLiked;
         }
+
+        // Toggle UI instantly (optimistic)
+        const newState = !isLiked;
+        setIsLiked(newState);
+
+        // Clear any pending API call
+        clearTimeout(likeDebounceTimer.current);
+
+        // Schedule the real API call after 500ms of inactivity
+        const originalState = likeStateRef.current;
+        likeDebounceTimer.current = setTimeout(async () => {
+            const finalState = newState; // captured from closure — this is the LATEST click's result
+            likeStateRef.current = null; // Reset for next sequence
+
+            // Only call API if the final state differs from the original server state
+            if (finalState === originalState) return; // No net change, skip API call
+
+            try {
+                if (finalState) {
+                    await likePost(id);
+                    toast.success("Post liked!");
+                } else {
+                    await unlikePost(id);
+                    toast.success("Post unliked");
+                }
+            } catch (err) {
+                setIsLiked(originalState); // Revert on failure
+                toast.error("Failed to update like");
+            }
+        }, 500);
     };
 
     const handleSave = async () => {
@@ -419,8 +438,8 @@ const PostDetails = () => {
                         <button
                             onClick={handleSave}
                             className={`flex items-center px-4 py-2 rounded-full transition-colors ${isSaved
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+                                ? 'bg-gray-900 text-white'
+                                : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
                                 }`}
                         >
                             <Bookmark className={`w-5 h-5 mr-2 ${isSaved ? 'fill-current' : ''}`} />

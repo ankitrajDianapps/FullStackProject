@@ -12,6 +12,7 @@ const { default: mongoose, mongo } = require("mongoose")
 const admin = require("firebase-admin")
 const { messages } = require("../../messages/apiResponses.js")
 const { clearCache } = require("../../middleware/cacheMiddleware.js")
+const { createNotification, deleteNotification } = require("../Notification/service.js")
 
 const createPost = async (data, user) => {
     try {
@@ -300,6 +301,9 @@ const deletePost = async (id, user) => {
         // delete all likes for this post
         await Like.deleteMany({ post_id: id })
 
+        // delete all notifications related to this post
+        await deleteNotification({ relatedId: id })
+
         return
 
     } catch (err) {
@@ -326,19 +330,13 @@ const likePost = async (req) => {
 
         if (!isLiked) {
             await Like.create({ post_id: postId, user: user._id, liked_at: new Date() })
-        }
 
-        //send notification to the user
-        const targetUser = post.author;
-        if (targetUser.fcmToken) {
-            await admin.messaging().send({
-                notification: {
-                    title: "New Like ❤️",
-                    body: user.userName + "liked your post"
-                },
-                data: {
-                    postId: postId
-                }
+            // Send in-app notification to the post author (only when actually liking)
+            await createNotification({
+                recipient: post.author,
+                sender: user._id,
+                type: 'LIKE',
+                relatedId: post._id,
             })
         }
 
@@ -374,6 +372,9 @@ const unlikePost = async (req) => {
         if (isLiked) {
             await Like.deleteOne({ post_id: postId, user: user._id })
         }
+
+        // Remove the LIKE notification when user unlikes
+        await deleteNotification({ sender: user._id, relatedId: post._id, type: 'LIKE' })
 
         // Invalidate caches
         clearCache(`/api/posts/${postId}`);

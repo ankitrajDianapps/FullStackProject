@@ -5,11 +5,12 @@ require("dotenv").config()
 
 const { connectDB } = require('./config/db.js')
 const userRoutes = require("./modules/user")
-const postRoutes = require("./modules/Post")
-const commentRouter = require("./modules/Comment")
-const analyticsRouter = require("./modules/Analytics")
-const savedPostRouter = require("./modules/SavedPost")
-const connectionRouter = require("./modules/Connection")
+const postRouter = require("./modules/Post/index.js")
+const commentRouter = require("./modules/Comment/index.js")
+const analyticsRouter = require("./modules/Analytics/index.js")
+const savedPostRouter = require("./modules/SavedPost/index.js")
+const connectionRouter = require("./modules/Connection/index.js")
+const notificationRouter = require("./modules/Notification/index.js")
 
 const cron = require("node-cron")
 const dailyAggregation = require("./cron/dailyAggregation.js")
@@ -54,11 +55,12 @@ app.use(cors({
 }))
 
 app.use("/api/auth", userRoutes)
-app.use("/api/posts", postRoutes)
+app.use("/api/posts", postRouter)
 app.use("/api/comments", commentRouter)
 app.use("/api/analytics", analyticsRouter)
 app.use("/api/saved", savedPostRouter)
 app.use("/api/connections", connectionRouter)
+app.use("/api/notifications", notificationRouter)
 
 // API 404 Handler
 app.use("/api", (req, res) => {

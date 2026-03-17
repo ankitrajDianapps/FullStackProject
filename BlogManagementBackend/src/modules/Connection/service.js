@@ -4,6 +4,7 @@ const { logger } = require("../../utils/logging.js")
 const connectionLogger = logger.child({ module: "connectionService" })
 const { Connection } = require("../../model/Connection.js")
 const { messages } = require("../../messages/apiResponses.js")
+const { createNotification, deleteNotification } = require("../Notification/service.js")
 
 
 const sendRequest = async (requesterId, recipientId) => {
@@ -26,6 +27,14 @@ const sendRequest = async (requesterId, recipientId) => {
         const connection = await Connection.create({
             requester: requesterId,
             recipient: recipientId
+        })
+
+        // Send a notification to the recipient
+        await createNotification({
+            recipient: recipientId,
+            sender: requesterId,
+            type: 'CONNECTION_REQUEST',
+            relatedId: connection._id,
         })
 
         return connection
@@ -52,6 +61,17 @@ const acceptRequest = async (connectionId, userId) => {
         connection.status = "accepted"
         await connection.save()
 
+        // Remove the initial request notification from the recipient
+        await deleteNotification({ relatedId: connectionId, type: 'CONNECTION_REQUEST' })
+
+        // Send an accepted notification to the original requester
+        await createNotification({
+            recipient: connection.requester,
+            sender: connection.recipient,
+            type: 'CONNECTION_ACCEPTED',
+            relatedId: connection._id,
+        })
+
         return connection
 
     } catch (err) {
@@ -75,6 +95,10 @@ const removeConnection = async (viewerId, profileUserId) => {
         })
 
         if (!result) throw new AppError(messages.CONNECTION_NOT_FOUND, 404)
+
+        // Delete any pending request notifications sent between these two
+        await deleteNotification({ relatedId: result._id })
+
         return
 
     } catch (err) {
