@@ -8,6 +8,8 @@ const userRoutes = require("./modules/user")
 const postRoutes = require("./modules/Post")
 const commentRouter = require("./modules/Comment")
 const analyticsRouter = require("./modules/Analytics")
+const savedPostRouter = require("./modules/SavedPost")
+const connectionRouter = require("./modules/Connection")
 
 const cron = require("node-cron")
 const dailyAggregation = require("./cron/dailyAggregation.js")
@@ -55,6 +57,8 @@ app.use("/api/auth", userRoutes)
 app.use("/api/posts", postRoutes)
 app.use("/api/comments", commentRouter)
 app.use("/api/analytics", analyticsRouter)
+app.use("/api/saved", savedPostRouter)
+app.use("/api/connections", connectionRouter)
 
 // API 404 Handler
 app.use("/api", (req, res) => {

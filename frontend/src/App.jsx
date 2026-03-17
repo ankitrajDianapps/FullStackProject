@@ -19,6 +19,7 @@ import Drafts from './pages/Drafts';
 import Profile from './pages/Profile';
 import Feed from './pages/Feed';
 import Explore from './pages/Explore';
+import SavedPosts from './pages/SavedPosts';
 // import { requestNotificationPermission, onforegroundMessage } from './firebase/firebaseMessaging';
 const NotFound = () => <div className="text-center mt-20 text-2xl">404 - Page Not Found</div>;
 
@@ -76,6 +77,7 @@ function App() {
         <Route path="/profile/:id" element={<Profile />} />
         <Route path="/my-posts" element={<MyPosts />} />
         <Route path="/drafts" element={<Drafts />} />
+        <Route path="/saved" element={<SavedPosts />} />
         <Route path="/create-post" element={<CreatePost />} />
         <Route path="/posts/:id" element={<PostDetails />} />
       </Route>

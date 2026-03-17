@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, PlusSquare, LogOut, Menu, X, User, Compass, FileClock } from 'lucide-react';
+import { LayoutDashboard, FileText, PlusSquare, LogOut, Menu, X, User, Compass, FileClock, Bookmark, Search } from 'lucide-react';
 import { clsx } from 'clsx';
 import { DEFAULT_PROFILE_IMAGE } from '../utils/constants';
+import { searchUsers } from '../services/connectionService';
 
 const DashboardLayout = () => {
     const { user, logout } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
+
+    // Search state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const debounceTimer = useRef(null);
+    const searchContainerRef = useRef(null);
 
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -16,10 +26,59 @@ const DashboardLayout = () => {
         { name: 'Profile', href: '/profile', icon: User },
         { name: 'My Posts', href: '/my-posts', icon: FileText },
         { name: 'My Drafts', href: '/drafts', icon: FileClock },
+        { name: 'Saved Posts', href: '/saved', icon: Bookmark },
         { name: 'Create Post', href: '/create-post', icon: PlusSquare },
     ];
 
     const isActive = (path) => location.pathname === path;
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+
+        clearTimeout(debounceTimer.current);
+
+        if (!value.trim()) {
+            setSearchResults([]);
+            setShowDropdown(false);
+            return;
+        }
+
+        debounceTimer.current = setTimeout(async () => {
+            try {
+                setSearchLoading(true);
+                setShowDropdown(true);
+                const res = await searchUsers(value.trim());
+                if (res?.status) {
+                    setSearchResults(res.data || []);
+                }
+            } catch (err) {
+                console.error('Search failed:', err);
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 300);
+    };
+
+    const handleResultClick = (userId) => {
+        setSearchQuery('');
+        setSearchResults([]);
+        setShowDropdown(false);
+        setIsSidebarOpen(false);
+        navigate(`/profile/${userId}`);
+    };
 
     return (
         <div className="min-h-screen bg-red-50/30 flex">
@@ -39,8 +98,70 @@ const DashboardLayout = () => {
                 <div className="flex items-center justify-center h-20 border-b border-red-100 bg-primary shadow-inner">
                     <h1 className="text-xl font-bold text-white tracking-wider uppercase">Dekho Blog</h1>
                 </div>
+
+                {/* Search Bar */}
+                <div className="px-4 py-3 border-b border-gray-100" ref={searchContainerRef}>
+                    <div className="relative">
+                        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-all">
+                            <Search className="w-4 h-4 text-gray-400 flex-shrink-0 mr-2" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                                placeholder="Search people..."
+                                className="w-full bg-transparent text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => { setSearchQuery(''); setSearchResults([]); setShowDropdown(false); }}
+                                    className="ml-1 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Results Dropdown */}
+                        {showDropdown && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden max-h-64 overflow-y-auto">
+                                {searchLoading ? (
+                                    <div className="flex items-center justify-center py-4">
+                                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent"></div>
+                                    </div>
+                                ) : searchResults.length > 0 ? (
+                                    searchResults.map((u) => (
+                                        <button
+                                            key={u._id}
+                                            onClick={() => handleResultClick(u._id)}
+                                            className="w-full flex items-center px-3 py-2.5 hover:bg-red-50 transition-colors text-left group"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex-shrink-0 mr-3">
+                                                <img
+                                                    src={u.avatar || DEFAULT_PROFILE_IMAGE}
+                                                    alt={u.fullName}
+                                                    className="w-full h-full object-cover"
+                                                    onError={e => { e.target.src = DEFAULT_PROFILE_IMAGE }}
+                                                />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 group-hover:text-primary truncate">{u.fullName}</p>
+                                                <p className="text-xs text-gray-400 truncate">@{u.userName}</p>
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-3 py-4 text-center text-sm text-gray-400">
+                                        No users found for &ldquo;{searchQuery}&rdquo;
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
                 <div className="flex-1 flex flex-col overflow-y-auto">
-                    <nav className="flex-1 px-4 py-6 space-y-2">
+                    <nav className="flex-1 px-4 py-4 space-y-1">
                         {navigation.map((item) => {
                             const Icon = item.icon;
                             return (
@@ -65,6 +186,7 @@ const DashboardLayout = () => {
                         })}
                     </nav>
                 </div>
+
                 <div className="flex-shrink-0 flex border-t border-red-50 p-6 bg-gray-50/50">
                     <div className="flex-shrink-0 w-full group block">
                         <div className="flex items-center mb-6">

@@ -13,7 +13,14 @@ const messages = {
 
 
     COMMENT_NOT_FOUND: "Comment not found with this Id",
-    COMMENT_ID_REQUIRED: "Comment ID is required"
+    COMMENT_ID_REQUIRED: "Comment ID is required",
+
+    SAVED_POST_NOT_FOUND: "Post is not in your saved list",
+    POST_ALREADY_SAVED: "Post is already saved",
+
+    CONNECTION_NOT_FOUND: "Connection not found",
+    CANNOT_CONNECT_SELF: "You cannot connect with yourself",
+    CONNECTION_ALREADY_EXISTS: "A connection request already exists between these users"
 }
 
 module.exports.messages = messages

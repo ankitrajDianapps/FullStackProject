@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostById, likePost, unlikePost, deletePost } from '../services/postService';
 import { getAllComments, addComment, deleteComment } from '../services/commentService';
+import { savePost, unsavePost, isPostSaved } from '../services/savedService';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/helpers';
 import Button from '../components/ui/Button';
 import CommentItem from '../components/CommentItem';
-import { Heart, MessageCircle, User, Trash2, ArrowLeft, ChevronDown, ChevronUp, Reply, Edit2, BarChart2, X } from 'lucide-react';
+import { Heart, MessageCircle, User, Trash2, ArrowLeft, ChevronDown, ChevronUp, Reply, Edit2, BarChart2, X, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getPostAnalytics } from '../services/analyticsService';
 import { DEFAULT_PROFILE_IMAGE } from '../utils/constants';
@@ -22,6 +23,7 @@ const PostDetails = () => {
     const [commentText, setCommentText] = useState('');
     const [submittingComment, setSubmittingComment] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
 
     // UI States
     const [showComments, setShowComments] = useState(true);
@@ -77,6 +79,14 @@ const PostDetails = () => {
 
     useEffect(() => {
         fetchPostData();
+        // Fetch save status
+        if (id) {
+            isPostSaved(id)
+                .then(res => {
+                    if (res?.status) setIsSaved(res.data?.isSaved || false);
+                })
+                .catch(() => { }); // silently fail — don't block page load
+        }
     }, [id]);
 
     const handleLike = async () => {
@@ -101,6 +111,30 @@ const PostDetails = () => {
             setIsLiked(previousState); // Revert
             console.error(err);
             toast.error(previousState ? "Failed to unlike" : "Failed to like");
+        }
+    };
+
+    const handleSave = async () => {
+        if (!user) {
+            toast.error("Please login to save posts");
+            return;
+        }
+
+        const previousState = isSaved;
+        setIsSaved(!previousState); // Optimistic
+
+        try {
+            if (previousState) {
+                await unsavePost(id);
+                toast.success("Post removed from saved list");
+            } else {
+                await savePost(id);
+                toast.success("Post saved!");
+            }
+        } catch (err) {
+            setIsSaved(previousState); // Revert
+            console.error(err);
+            toast.error(previousState ? "Failed to unsave post" : "Failed to save post");
         }
     };
 
@@ -380,6 +414,17 @@ const PostDetails = () => {
                         >
                             <MessageCircle className="w-5 h-5 mr-2" />
                             <span>Comments ({post?.totalComment || 0})</span>
+                        </button>
+
+                        <button
+                            onClick={handleSave}
+                            className={`flex items-center px-4 py-2 rounded-full transition-colors ${isSaved
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+                                }`}
+                        >
+                            <Bookmark className={`w-5 h-5 mr-2 ${isSaved ? 'fill-current' : ''}`} />
+                            <span>{isSaved ? 'Saved' : 'Save'}</span>
                         </button>
                     </div>
 

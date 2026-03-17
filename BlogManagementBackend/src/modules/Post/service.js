@@ -6,6 +6,7 @@ const { User } = require("../../model/User.js")
 const { Comment } = require("../../model/Comment.js")
 const { PostView } = require("../../model/PostView.js")
 const { Like } = require("../../model/Like.js")
+const { SavedPost } = require("../../model/SavedPost.js")
 const AppError = require("../../utils/AppError.js")
 const { default: mongoose, mongo } = require("mongoose")
 const admin = require("firebase-admin")
@@ -292,6 +293,12 @@ const deletePost = async (id, user) => {
 
         //delete all the comments of it
         await Comment.deleteMany({ post: id })
+
+        // delete all saved references to this post
+        await SavedPost.deleteMany({ post: id })
+
+        // delete all likes for this post
+        await Like.deleteMany({ post_id: id })
 
         return
 

@@ -303,3 +303,40 @@ module.exports.changePassword = async (req, res) => {
         })
     }
 }
+
+
+module.exports.searchUsers = async (req, res) => {
+    try {
+        const { q } = req.query
+        if (!q || q.trim().length === 0) {
+            return apiResponse({ res, code: 200, message: "Search results", status: true, data: [] })
+        }
+
+        const regex = new RegExp(q.trim(), "i")
+        const users = await User.find({
+            $or: [
+                { fullName: regex },
+                { userName: regex }
+            ],
+            _id: { $ne: req.user._id } // exclude self from results
+        })
+            .select("_id fullName userName avatar role")
+            .limit(10)
+
+        return apiResponse({
+            res,
+            code: 200,
+            message: "Search results",
+            status: true,
+            data: users
+        })
+
+    } catch (err) {
+        return apiResponse({
+            res,
+            code: err.statusCode || 500,
+            message: err.message,
+            status: false,
+        })
+    }
+}

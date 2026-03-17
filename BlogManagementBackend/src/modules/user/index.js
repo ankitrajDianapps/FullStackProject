@@ -1,6 +1,6 @@
 const express = require("express")
 const multer = require("multer")
-const { loginUser, updateUser, refresh, logoutUser, getUserById, saveFcmToken, forgotPassword, verifyOtp, changePassword, sendSignupOTP, verifySignupOTP } = require("./controller.js")
+const { loginUser, updateUser, refresh, logoutUser, getUserById, saveFcmToken, forgotPassword, verifyOtp, changePassword, sendSignupOTP, verifySignupOTP, searchUsers } = require("./controller.js")
 const { auth } = require("../../middleware/authMiddleware.js")
 const { uploadAvatar } = require("../../utils/Upload.js")
 const { cacheMiddleware } = require("../../middleware/cacheMiddleware.js")
@@ -39,6 +39,7 @@ router.patch("/update-profile", auth, (req, res, next) => {
 
 router.get("/logout", auth, logoutUser)
 
+router.get("/search", auth, searchUsers)
 router.get("/:userId", auth, cacheMiddleware(60), getUserById)
 
 router.save
