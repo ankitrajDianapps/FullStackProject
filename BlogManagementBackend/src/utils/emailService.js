@@ -17,6 +17,7 @@ const transporter = nodemailer.createTransport({
         user,
         pass,
     },
+    family: 4
 });
 
 /**
