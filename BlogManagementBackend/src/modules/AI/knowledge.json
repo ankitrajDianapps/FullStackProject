@@ -1,0 +1,42 @@
+[
+    {
+        "id": "intro",
+        "topic": "About Dekho Blog",
+        "content": "Dekho Blog is a modern full-stack blog management system where users can create, read, and share blog posts. It features a rich editor, AI writing assistance, trending posts, and social interactions like likes, comments, and following other authors."
+    },
+    {
+        "id": "auth",
+        "topic": "Account Creation & Login",
+        "content": "Users can sign up using their email and name. We use OTP (One-Time Password) verification for both sign-up and forgot password flows to ensure security. You must verify your email with the 6-digit code sent to you."
+    },
+    {
+        "id": "ai_writing",
+        "topic": "AI Writing Assistant",
+        "content": "The platform includes an AI Writing Assistant powered by DeepSeek. It can help you generate full blog drafts from a title, automatically summarize your post into an excerpt, and refine your writing for better grammar and flow."
+    },
+    {
+        "id": "posts",
+        "topic": "Creating & Managing Posts",
+        "content": "You can create posts in the 'Create Post' page. You can save them as 'Drafts' to edit later or 'Publish' them directly. Posts include a title, excerpt, content, category, tags, and a featured image."
+    },
+    {
+        "id": "social",
+        "topic": "Social Features",
+        "content": "Logged-in users can like posts, leave comments, and follow other users. You will receive notifications when someone interacts with your posts or follows you."
+    },
+    {
+        "id": "analytics",
+        "topic": "Dashboard & Analytics",
+        "content": "The Dashboard provides authors with analytics about their performance, including total views, likes, and comment counts. You can also see 'Trending Posts' which are the most popular content on the platform globally."
+    },
+    {
+        "id": "saved",
+        "topic": "Saved Posts",
+        "content": "If you find a post you like but want to read later, you can click the 'Save' icon. All your saved articles are accessible from the 'Saved Posts' section in your profile."
+    },
+    {
+        "id": "connections",
+        "topic": "Following & Connections",
+        "content": "You can build your network by following other authors. Your 'Feed' will show posts from people you follow, while 'Explore' shows trending and diverse content from the entire platform."
+    }
+]

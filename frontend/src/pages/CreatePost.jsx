@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPost } from '../services/postService';
+import { generateAIContent, summarizeAIContent, refineAIContent } from '../services/aiService';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import { Sparkles, Wand2, FileText, Loader2, RefreshCw } from 'lucide-react';
 
 import toast from 'react-hot-toast';
 
@@ -19,6 +21,69 @@ const CreatePost = () => {
         featuredImage: '',
         status: 'published' // Default to published for now
     });
+
+    const [aiLoading, setAiLoading] = useState({
+        generate: false,
+        summarize: false,
+        refine: false
+    });
+
+    const handleAIGenerate = async () => {
+        if (!formData.title) {
+            toast.error('Please enter a title first!');
+            return;
+        }
+        setAiLoading(prev => ({ ...prev, generate: true }));
+        try {
+            const response = await generateAIContent(formData.title);
+            if (response.status) {
+                setFormData(prev => ({ ...prev, content: response.data.content }));
+                toast.success('Draft generated! ✨');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to generate draft');
+        } finally {
+            setAiLoading(prev => ({ ...prev, generate: false }));
+        }
+    };
+
+    const handleAISummarize = async () => {
+        if (!formData.content) {
+            toast.error('Please write some content first!');
+            return;
+        }
+        setAiLoading(prev => ({ ...prev, summarize: true }));
+        try {
+            const response = await summarizeAIContent(formData.content);
+            if (response.status) {
+                setFormData(prev => ({ ...prev, excerpt: response.data.summary }));
+                toast.success('Excerpt generated! 📝');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to summarize');
+        } finally {
+            setAiLoading(prev => ({ ...prev, summarize: false }));
+        }
+    };
+
+    const handleAIRefine = async (mode = 'improve') => {
+        if (!formData.content) {
+            toast.error('Please write some content first!');
+            return;
+        }
+        setAiLoading(prev => ({ ...prev, refine: true }));
+        try {
+            const response = await refineAIContent(formData.content, mode);
+            if (response.status) {
+                setFormData(prev => ({ ...prev, content: response.data.content }));
+                toast.success('Content refined! 🪄');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to refine content');
+        } finally {
+            setAiLoading(prev => ({ ...prev, refine: false }));
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -76,31 +141,76 @@ const CreatePost = () => {
                     </div>
                 )}
 
-                <Input
-                    label="Title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter post title"
-                />
+                <div className="relative group">
+                    <Input
+                        label="Title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                        placeholder="Enter post title"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleAIGenerate}
+                        disabled={aiLoading.generate}
+                        className="absolute right-0 top-0 flex items-center space-x-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-2 py-1 rounded-bl-lg rounded-tr-md border-l border-b border-primary/10 disabled:opacity-50"
+                        title="Generate draft using AI"
+                    >
+                        {aiLoading.generate ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                            <Sparkles className="w-3 h-3" />
+                        )}
+                        <span>AI Draft</span>
+                    </button>
+                </div>
 
-                <Input
-                    label="Excerpt"
-                    name="excerpt"
-                    value={formData.excerpt}
-                    onChange={handleChange}
-                    required
-                    placeholder="Short summary of the post"
-                />
+                <div className="relative group">
+                    <Input
+                        label="Excerpt"
+                        name="excerpt"
+                        value={formData.excerpt}
+                        onChange={handleChange}
+                        required
+                        placeholder="Short summary of the post"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleAISummarize}
+                        disabled={aiLoading.summarize}
+                        className="absolute right-0 top-0 flex items-center space-x-1 text-xs font-semibold text-amber-600 hover:text-amber-700 transition-colors bg-amber-50 px-2 py-1 rounded-bl-lg rounded-tr-md border-l border-b border-amber-100 disabled:opacity-50"
+                        title="Auto-summarize using AI"
+                    >
+                        {aiLoading.summarize ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                            <FileText className="w-3 h-3" />
+                        )}
+                        <span>AI Summarize</span>
+                    </button>
+                </div>
 
-                <div className="w-full">
-                    <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <div className="w-full relative">
+                    <div className="flex justify-between items-end mb-1">
+                        <label htmlFor="content" className="block text-sm font-medium text-gray-700">Content</label>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                type="button"
+                                onClick={() => handleAIRefine('improve')}
+                                disabled={aiLoading.refine}
+                                className="flex items-center space-x-1 text-[11px] font-bold text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded-md transition-all border border-indigo-100 disabled:opacity-50"
+                            >
+                                {aiLoading.refine ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                                <span>Refine Writing</span>
+                            </button>
+                        </div>
+                    </div>
                     <textarea
                         id="content"
                         name="content"
-                        rows={8}
-                        className="w-full px-3 py-2 border border-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors border-gray-300"
+                        rows={12}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-y min-h-[300px]"
                         value={formData.content}
                         onChange={handleChange}
                         required

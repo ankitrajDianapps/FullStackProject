@@ -11,6 +11,7 @@ const analyticsRouter = require("./modules/Analytics/index.js")
 const savedPostRouter = require("./modules/SavedPost/index.js")
 const connectionRouter = require("./modules/Connection/index.js")
 const notificationRouter = require("./modules/Notification/index.js")
+const aiRouter = require("./modules/AI/index.js")
 
 const cron = require("node-cron")
 const dailyAggregation = require("./cron/dailyAggregation.js")
@@ -61,6 +62,7 @@ app.use("/api/analytics", analyticsRouter)
 app.use("/api/saved", savedPostRouter)
 app.use("/api/connections", connectionRouter)
 app.use("/api/notifications", notificationRouter)
+app.use("/api/ai", aiRouter)
 
 // API 404 Handler
 app.use("/api", (req, res) => {

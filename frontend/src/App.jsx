@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChatWidget from './components/ChatWidget';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import LandingPage from './pages/LandingPage';
@@ -51,40 +52,43 @@ function App() {
 
   //-----------------------------------------------------------------------
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/explore" element={<Explore />} />
+    <>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/explore" element={<Explore />} />
 
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-signup-otp" element={<VerifySignupOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-      </Route>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/verify-signup-otp" element={<VerifySignupOtp />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Route>
 
-      {/* Protected Routes */}
-      <Route element={
-        <ProtectedRoute>
-          <DashboardLayout />
-        </ProtectedRoute>
-      }>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/:id" element={<Profile />} />
-        <Route path="/my-posts" element={<MyPosts />} />
-        <Route path="/drafts" element={<Drafts />} />
-        <Route path="/saved" element={<SavedPosts />} />
-        <Route path="/create-post" element={<CreatePost />} />
-        <Route path="/posts/:id" element={<PostDetails />} />
-      </Route>
+        {/* Protected Routes */}
+        <Route element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/my-posts" element={<MyPosts />} />
+          <Route path="/drafts" element={<Drafts />} />
+          <Route path="/saved" element={<SavedPosts />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/posts/:id" element={<PostDetails />} />
+        </Route>
 
-      {/* Catch all */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Catch all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <ChatWidget />
+    </>
   );
 }
 
