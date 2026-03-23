@@ -10,14 +10,11 @@ const pass = process.env.MAIL_PASS;
 
 // Create a transporter
 const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465, false for other ports
+    service: 'gmail', // Use service: 'gmail' for better built-ins
     auth: {
         user,
         pass,
     },
-    family: 4
 });
 
 /**
